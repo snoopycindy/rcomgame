@@ -1,0 +1,12 @@
+com.avector.itw.itwmj16hd 26171.15 26300.34 
+com.game.basketballshoot 26402.82 26534.23 
+memory.game.collection.free 26630.33 26760.27 
+com.kiloo.subwaysurf 26809.74 26936.34 
+com.game.JewelsStar 27006.19 27132.69 
+com.cookapps.puddingpop 27228.03 27354.66 
+it.b77.pianomasterfree 27407.22 27539.31 
+com.brausoft.kidsslidepuzzle 27610.2 27736.44 
+br.com.tapps.balloonparty 27797.22 27930.67 
+com.epicforce.SuperLaser 28142.1 28268.28 
+com.playmous.ttf 28329.16 28460.41 
+com.ezjoynetwork.marbleblast3 28521.62 28647.82 
