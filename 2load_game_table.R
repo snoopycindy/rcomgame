@@ -1,12 +1,9 @@
-#game table
-datadir <-("../gesture log/accomplish")
-#game name and code data 
-gn <- ("../gesture log/gl/gn.txt")
+
 
 
 #table:game name vs game code 
-gcode = read.table(gn, header=T, sep="\t", as.is=T, encoding="UTF-8")
-allsub = list.files(path=datadir, full=T)
+
+allsub = list.files(path=adir, full=T)
 name.all.s=regexpr("[^[:punct:]]+$",allsub)
 name.all=sapply(1:length(name.all.s),function(x) substr(allsub[x],start=name.all.s[x],stop=nchar(allsub[x])))
 

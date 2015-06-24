@@ -5,6 +5,7 @@ setwd("/Users/yxhung/Dropbox/workspace/rcomgame/R")
 # source("../R.source/my.legend.R")
 source("../R.src/rey.f.R")
 source("../R.src/yx.common.R")
+source("../R.src/route.R")
 
 
 #remove the lines in this dataframe that contain NAs across all columns
@@ -19,22 +20,30 @@ fn = paste(fdir_yx, "/allgame_rating.txt", sep="")
 d_yx_rating = read.table(fn)
 d_yx_rating = delete_NA(d_yx_rating)
 
+spd = c("num.act", "num.sld", "num.tap",
+        "frq.act", "frq.sld", "frq.tap", "itv.act","speed")
+num = c("num.act", "num.sld", "num.tap", "x.tap.start.sd",
+        "y.tap.start.sd", "x.sld.start.sd", "y.sld.start.sd", 
+        "number")
+dis = c("ratio.tap", "ratio.sld", "dis.sld", "distance")
 
-f.list = c(1:27, 29) #game sub
-d_test_yx = d_yx_rating[,f.list]
-d_test_yx = delete_NA(d_test_yx)
+lapply(p.list, function(p){
+  nowd = d_yx_rating[d_yx_rating$sub==p,]
+  
+  svm = svm(distance ~ ., data = nowd[,dis], type='C-classification',
+            cross = 5)
+  acc = summary(svm)$tot.accuracy
+  pred = predict(svm, nowd[,-len(nowd)])
+  table(nowd$all, pred)
+  action = nowd$all
+  success = sum(pred==action)/length(action)
+  cat(p, ":", success, "\n")
+})
+
+
 # normalize feature
 # d_test_yx[,3:18] = apply(d_test_yx[,3:18], 2, normalize.vector)
 
-
-# read test data
-name.f = c("game", "sub", "num.act", "frq.act", "itv.act", 
-           "num.tap", "frq.tap", "ratio.tap", "dur.tap", "itv.tap",
-           "num.sld", "frq.sld", "ratio.sld", "dur.sld", "itv.sld", 
-           "dis.sld", "spd.sld", "spd_sd.sld", "action")
-fn = paste(fdir_test, "/allgame.txt", sep="")
-d_test = read.table(fn)
-names(d_test) = name.f
 
 #=========test=================
 d = d_yx_rating
@@ -84,7 +93,7 @@ MDSplot(model, train$gn, palette=c(1:7))
 MDSplot(model, train$all, palette=c(1:7), pch=train$gn)
 
 #Logistic regression
-fit <- glm(gn~.,data=train)
+fit <- glm(all~.,data=train)
 summary(fit) # display results
 predict(fit, type="response") # predicted values
 residuals(fit, type="deviance") # residuals

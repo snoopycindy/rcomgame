@@ -3,8 +3,7 @@
 #2.若此event為多按鈕事件，偵測slot會啟動，其sl參數記錄0,1,2...來表示第1,2,3..個按鈕的變化
 #3.每一個按鈕從壓下去到最後拿起來為止稱為一個action 
 
-setwd("e:/Dropbox/workspace/done_app_yx/R")
-source('2load_game_table.R')
+library(plyr)
 options(warn=1) 
 
 #輸出參數
@@ -14,7 +13,7 @@ splot=0 #若要看plot寫0 else寫1
 ntect=-9       #在原始資料上沒有讀取到的資料紀錄為none detect
 data.seg=0.1  #原始資料對於持續壓住的事件，是約每0.02秒check一次探針
 seg.len=10     #一個segment的長度(sec)
-tap.lim=45     #一個tap的滑動最多在tap.lim距離內(1cm約等於89.29格)
+tap.lim=20     #一個tap的滑動最多在tap.lim距離內(1cm約等於89.29格)
 na.rp=0        #feature中的參數，取代NA跟NaN為na.rp
 
 
@@ -26,7 +25,7 @@ f.class=c("^rate.","^ratio.action","^ratio.dir","^dir.sin.","^dir.cos.",
 rec.all=list() #存取所有action的record
 seg.all=list()
 gt.all=list() #存原始data的record
-
+allsub = list.files(path=adir, full=T)
 #針對每個玩家玩的每款遊戲，存取table在gt上
 for(game in gcode$gc){
   for(sub in allsub) {
@@ -306,12 +305,12 @@ rec.all=ldply(rec.all)
 seg.all=ldply(seg.all)
 gt.all=ldply(gt.all)
 #yh2-----------------------------------
-write.table(rec.all, file = "rec.all")
-write.table(seg.all, file = "seg.all")
-write.table(gt.all, file = "gt.all")
-rec.all=read.table(file = "rec.all")
-seg.all=read.table(file = "seg.all")
-gt.all=read.table(file = "gt.all")
+write.table(rec.all, file = paste(gldir, "rec.all",sep = ""))
+write.table(seg.all, file = paste(gldir, "seg.all",sep = ""))
+write.table(gt.all, file = paste(gldir, "gt.all",sep = ""))
+rec.all=read.table(file = paste(gldir, "rec.all",sep = ""))
+seg.all=read.table(file = paste(gldir, "seg.all",sep = ""))
+gt.all=read.table(file = paste(gldir, "gt.all",sep = ""))
 #yh2-end-------------------------------
 
 #debug (dist)

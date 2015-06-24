@@ -6,116 +6,27 @@ source("../R.src/rey.f.R")
 source("../R.src/yx.common.R")
 source("../R.src/route.R")
 
-# utils:::menuInstallPkgs()
-#設定讀取路徑
-
-# Rey's features===========================
-rec.all=read.table(file = "rec.all")
-seg.all=read.table(file = "seg.all")
-gt.all=read.table(file = "gt.all")
-
-#segments取75%, save in "ss"
-ss <-list()
-for(game in gcode$gc)
-  for(sub in p.list){
-    seg.temp=seg.all[seg.all$code==game & seg.all$user==sub,]
-    if(nrow(seg.temp)==0)
-      next
-    else{
-      act.lim=quantile(seg.temp$rate.action,prob=0.25)
-      seg.temp=seg.temp[seg.temp$rate.action>=act.lim,]      
-      ss=append(ss,list(seg.temp))
-    }
-  }
-ss = ldply(ss)
-ss = ss[, -(65:66)] # delete "multi.dur.mean", "multi.ratio.action"
-
-# average each feature from Rey's analysis, save in "feature.txt"
-fn = paste(pdir, "/all_no_rating.txt", sep="")
-sink(fn)
-for(g in gcode$gc){
-  for(sub in p.list){
-    isd = which(ss$code == g & ss$user == sub)
-    if(!len(isd))
-      next
-    seg.part = sapply(ss[isd,1:70], mean)
-    seg.part = c(seg.part, sub, g)
-    cat(seg.part, "\n")
-  }
-}
-sink()
-
-# add the rating from subject to ss
-d = read.table(fn)
-names(d) = names(ss)
-for(sub in p.list){
-  data.now = d[d$user==sub,]
-  fn.std = paste(sdir,"/",sub,".csv",sep="")
-  std = read.table(fn.std)
-  std = std[,-(1:3)]
-  game.list = unique(data.now$code)
-  d7 = data.frame()
-  for(game in game.list){
-    n = grep(game, std$code)   #回傳fn.part的位置，如果吻合
-    if(length(n)==0) 
-      next
-    d7 = rbind(d7, std[n,])
-  }
-  d7 = d7[,-1]
-  d7 = cbind(data.now, d7)
-  fn.d7 = paste(pdir, "/",  sub, ".txt", sep="")
-  write.table(d7, fn.d7)
-}
-
-# fdir_rey <- "../gesture log/per_game_table_sub-feature_rey"
-d_rey = data.frame()
-for(g in gcode$gc){
-  d = {}
-  for(p in p.list){
-    # from parse70
-    fn.d7 = paste(pdir, "/",  p, ".txt", sep="")
-    d7 = read.table(fn.d7)
-    n = grep(g, d7$code)
-    if(length(n)==0) 
-      next
-    else
-      d = rbind(d, d7[n,])
-  }
-  
-  #change the gcode of sld24 & sld25
-  if(g=="sld24" || g=="sld25")
-    d$code="sld02"
-  
-  fn.d9 = paste(fdir_rey, "/",  d$code[1], ".txt", sep="")
-  write.table(d, file = fn.d9)
-  
-  
-  d_rey = rbind(d_rey, d)
-  fn.d = paste(fdir_rey, "/allgame.txt", sep="")
-  write.table(d_rey, file = fn.d)
-}
-
-
 # YX's features===========================
 # 1st Parse info - yx ==================
 #處理後的log檔
 fdir_yx <- "../gestureLog/per_game_table_sld-tap"
-adir_id <- "../gestureLog/1parseData/"
-thd.dis = 11
+adir <- "../gestureLog/1parseData/"
+thd.dis = 20
 for(game in gcode$gc){
-  fn.part = list.files(adir_id, pattern=game)
-  fn.d3 = paste(fdir_yx1, "/", game, ".txt", sep="")
+  fn.part = list.files(adir, pattern=game)
+  fn.d3 = paste(fdir_yx, "/", game, ".txt", sep="")
   sink(fn.d3)
-  for(sub in 1:len(p.list)) {
+  for(p in 1:len(p.list)) {
     # find the game log =================  
-    n = grep(p.list[sub], fn.part) #回傳fn.part的位置，如果吻合
+    n = grep(p.list[p], fn.part) #回傳fn.part的位置，如果吻合
     if(length(n)==0) 
       next
     
     # read file =================
     #time, multi-event, event, pos.x, pos.y, press
     #names(d2) = c("t", "sl", "id", "lv", "x", "y", "prs") 
-    fn = paste("../gestureLog/1parseData/", p.list[sub], "_", game, ".txt", sep="")
+    fn = paste("../gestureLog/1parseData/", p.grp[p], "_",
+               p.list[p], "_", game, ".txt", sep="")
     d2 = read.table(fn, header=T)
     
     
@@ -167,7 +78,7 @@ for(game in gcode$gc){
       mean.prs = mean(d2$prs[isd], na.rm = T)
       sd.prs = sd(d2$prs[isd], na.rm = T)
       # game feature belong to one subject
-      d3 = c(game, p.list[sub], type, 
+      d3 = c(game, p.list[p], type, 
              sx, sy, ex, ey, sum.l, 
              st, et, sum.t, mean.v, sd.v,
              mean.prs, sd.prs)
@@ -194,7 +105,7 @@ cal_itv = function(st,et){
 fn.d4 = paste(fdir_yx, "/allgame.txt", sep="")
 sink(fn.d4)
 for(game in gcode$gc){
-  fn.d3 = paste(fdir_yx1, "/", game, ".txt", sep="")
+  fn.d3 = paste(fdir_yx, "/", game, ".txt", sep="")
   d3 = read.table(file = fn.d3)
   names(d3) = c("gn", "sub", "type", 
                 "sx", "sy", "ex", "ey","sum.l", 
@@ -202,8 +113,6 @@ for(game in gcode$gc){
                 "mean.prs", "sd.prs")
   sub.list = unique(d3$sub)
   
-#   fn.d4 = paste(fdir_yx, "/", d3$gn[1], ".txt", sep="")
-#   sink(fn.d4)
   for(s in sub.list){
     now.d = d3[d3$sub==s,]
     t.s = min(now.d$st) 
@@ -247,18 +156,18 @@ for(game in gcode$gc){
            x.sld.start.sd, y.sld.start.sd, x.sld.end.sd, y.sld.end.sd)
     cat(d4, "\n")
   }
-#   sink()
+
 }
 sink()
 
-std = {}
-for(p in p.list){
-  fn = paste("../gestureLog/gameStd/", p, ".csv", sep="")
+std={}
+for(p in 1:len(p.list)){
+  fn = paste(sdir, p.grp[p], "_", p.list[p],".csv",sep="")
   d = read.table(fn)
-  d = cbind(p, d)
+  d = cbind(p.list[p], d)
   std = rbind(std, d)
 }
-
+names(std)[1] = "sub"
 
 # add the rate from subject 
 d4 = read.table(fn.d4)
@@ -271,7 +180,7 @@ names(d4) = c("game", "sub", "t.all", "num.act", "frq.act", "itv.act",
 d={}
 for(p in p.list){
   data.now = d4[d4$sub==p,]
-  std.now = std[std$p==p,]
+  std.now = std[std$sub==p,]
 #   fn.std = paste(sdir,"/",p,".csv",sep="")
 #   std = read.table(fn.std)
 #   std = std[,-(1:3)]

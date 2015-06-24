@@ -1,6 +1,8 @@
-setwd("/home/yaxuan/rcomgame/R")
+# setwd("/home/yaxuan/rcomgame/R")
+setwd("/Users/yxhung/Dropbox/workspace/rcomgame/R" )
 source("../R.src/common.R")
 source("../R.src/yx.common.R")
+source("../R.src/route.R")
 # utils:::menuInstallPkgs()
 # install.packages("")
 require(Hmisc)
@@ -10,20 +12,13 @@ library(plotrix)
 
 name.d = c("time", "type", "event", "value")
 name.d2 = c("t", "sl", "id", "lv", "x", "y", "prs")
-#name.std = c("t", "rt", "type", "x", "y", "ex", "ey", "h")
 name.std = c("t", "at", "rt", "order", "gn", "pn", "p", "pc")
 none = -9
 
-
-
 # utils:::menuInstallPkgs()
 
-#origin data
-gdir <- "../gestureLog/"
-
-#處理後的log檔
-cdir <- "../complete data/"
-
+#gesture log data
+gldir <- "../gestureLog/"
 
 #設定參數
 ntect = -9 #設定none detect為-9
@@ -34,14 +29,12 @@ gcode = read.table("../gestureLog/gNameCode.txt",
 #讀取game 評價
 geval = read.table("../gestureLog/gEvaluate.txt", 
                    header=T, as.is=T, sep="\t", encoding="UTF-8")
-p.list=c('0603ot01', '0603ot02', '0603ot03', '0603ot04', '0605ot01','0605ot02',
-         '0609ot01', '0609ot02') #設定player列表
 
-for(p in p.list){
+for(p in 1:len(p.list)){
   
   #讀取game name, start time, end time 
   #stdand data
-  fn=paste(gdir, "gameLog/",p,".csv",sep="")
+  fn=paste(gldir, "gameLog/",p.list[p],".csv",sep="")
   std = read.table(fn, header=F, as.is=T, sep=",")
   names(std) = name.std
   sink("std.txt")
@@ -62,14 +55,14 @@ for(p in p.list){
   gl <- gl[order(gl$st),]
   
   #替gl加上遊戲評價 (game evaluation)
-  gl <- cbind(gl, geval[geval$subcode==p,2:8])
+  gl <- cbind(gl, geval[geval$subcode==p.list[p],2:8])
   #save the std data
-  fn.std = paste(gdir, "gameStd/",p,".csv",sep="")
+  fn.std = paste(gldir, "gameStd/", p.grp[p], "_", p.list[p],".csv",sep="")
   write.table(gl, file = fn.std)
   
   
   #讀取touch log data到d
-  fn=paste(gdir, "touchLog/",p,".s",sep="")
+  fn=paste(gldir, "touchLog/", p.list[p],".s",sep="")
   alld = read.table(fn, header=F, as.is = T)
   alld = alld[,-1]
   alld[1] = unlist(strsplit(as.character(alld[,1]), "]"))
@@ -95,7 +88,10 @@ for(p in p.list){
     
     d = alld[i.s:i.e,]
     source("p_sony_log.R")
-    fn.d2 = paste(gdir, "1parseData/",p,"_",gl$code[i.g],".txt",sep="")
+#     fn.d2 = paste(gldir, "1parseData/", p.grp[p], "/", p.list[p],"/",p.list[p],"_", 
+#                       gl$code[i.g], ".txt", sep="")
+    fn.d2 = paste(gldir, "1parseData/", p.grp[p], "_", p.list[p], "_", 
+                  gl$code[i.g],".txt",sep="")
     write.table(d2, file = fn.d2)
   }
   

@@ -1,32 +1,38 @@
 # setwd("C:/rey/done_app_proj_gesture/R")
-setwd("e:/Dropbox/workspace/done_app_yx/R")
-source("../R.source/common.R")
-source("../R.source/my.fig.R")
-source("../R.source/my.legend.R")
-source("../R.source/rey.f.R")
+source("../R.src/common.R")
+source("../R.src/yx.common.R")
+source("../R.src/route.R")
+source("../R.src/rey.f.R")
+source("../R.src/my.fig.R")
+source("../R.src/my.legend.R")
+
 # utils:::menuInstallPkgs()
 #設定讀取路徑
 
 #每個玩家遊戲時間的資料
-gdir <- "../gesture log/gl"
+gdir <- "../gestureLog/gameLog"
 
 #原始log檔
-ldir <- "../gesture log/log"
+ldir <- "../gestureLog/touchLog"
 
 #處理後的log檔
-adir <- "../gesture log/accomplish"
+adir <- "../gestureLog/1parseDataRey"
 #處理後的std檔
-sdir <- "../gesture log/std"
+sdir <- "../gestureLog/gameStd"
 
-#遊戲跟其code的列表
-gn <- "../gesture log/gl/gn.txt"
 
+name.d = c("time", "type", "event", "value")
+name.d2 = c("t", "sl", "id", "lv", "x", "y", "prs")
 name.std = c("t", "at", "rt", "order", "gn", "pn", "p", "pc")
 #設定參數
 ntect = -9 #設定none detect為-9
 time_limit = 60 #game log檔至少要60S以上
-gcode = read.table(gn, header=T, sep="\t", as.is=T, encoding="UTF-8") #讀取game列表
-p.list=c('1201sub01','1202sub01','1202sub02', '1203sub01', '1205sub01','1205sub02') #設定player列表
+#讀取game列表
+gcode = read.table("../gestureLog/gNameCode.txt", 
+                   header=T, sep="\t", as.is=T, encoding="UTF-8") 
+#讀取game 評價
+geval = read.table("../gestureLog/gEvaluate.txt", 
+                   header=T, as.is=T, sep="\t", encoding="UTF-8")
 
 
 sapply(p.list,function(x) dir.create(file.path(adir,x), showWarnings = FALSE)) #create directory
@@ -54,15 +60,12 @@ for(p in p.list){
   gc <- sapply(1:len(gl$pn),function(x) gcode$gc[gcode$pn==gl$pn[x]])
   gl$code <- gc
   gl <- gl[order(gl$st),]
+  
   #替gl加上遊戲評價 (game evaluation)
-  fn=paste(gdir,"/",p,"_e.csv",sep="")
-#   fn=paste(odir, "fnstd/",p,"_e.csv",sep="")
-  std_e = read.table(fn, header=F, as.is=T)
-  names(std_e) = c("all", "action", "content") #設定column name
-  gl <- cbind(gl,std_e)
+  gl <- cbind(gl, geval[geval$subcode==p,2:8])
   #save the std data
-  fn.std = paste(sdir,"/",p,".csv",sep="")
-  write.table(gl, file = fn.std)
+#   fn.std = paste(gdir, "gameStd/", p.grp[p], "_", p.list[p],".csv",sep="")
+#   write.table(gl, file = fn.std)
   
   
   #讀取touch log data到d

@@ -23,7 +23,6 @@ gn <- ("../gesture log/gl/gn.txt")
 ntect = -9 #設定none detect為-9
 time_limit = 60 #game log檔至少要60S以上
 gcode = read.table("gn_new.txt", header=T, sep="\t", as.is=T, encoding="UTF-8") #讀取game列表
-p.list=c('1201sub01','1202sub01','1202sub02', '1203sub01', '1205sub01','1205sub02') #設定player列表
 
 #table:game name vs game code 
 gcode = read.table("gn_new.txt", header=T, sep="\t", as.is=T, encoding="UTF-8") #讀取game列表
